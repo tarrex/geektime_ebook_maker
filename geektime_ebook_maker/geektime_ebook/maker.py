@@ -30,9 +30,10 @@ def _format_file_name(name):
 
 
 def _generate_cover_img(url, output_dir):
-    print('---fetch cover image: {} ----'.format(url[10:-2]))
+    img_url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url)[0]
+    print('---fetch cover image: {} ----'.format(img_url))
     try:
-        r = requests.get(url)
+        r = requests.get(img_url, stream=True, timeout=5)
         with open(os.path.join(output_dir, 'cover.jpg'), 'wb') as f:
             f.write(r.content)
     except:
@@ -41,14 +42,14 @@ def _generate_cover_img(url, output_dir):
 
 
 def _parse_image(content, output_dir):
-
     p = r'<img src=".+" '
     img_url_list = re.findall(p, content)
     for url in img_url_list:
-        print('---fetch image: {} ----'.format(url[10:-2]))
+        img_url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url)[0]
+        print('---fetch image: {} ----'.format(img_url))
         try:
-            url_local = str(uuid.uuid4()) + '.jpg'
-            r = requests.get(url[10:-2])
+            url_local = str(uuid.uuid4()) + '.' + img_url.split('.')[-1]
+            r = requests.get(img_url, stream=True, timeout=5)
             with open(os.path.join(output_dir, url_local), 'wb') as f:
                 f.write(r.content)
             content = content.replace(url, '<img src="{}" '.format(url_local))
